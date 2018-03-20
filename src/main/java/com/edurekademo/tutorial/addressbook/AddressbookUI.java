@@ -6,6 +6,7 @@ import com.vaadin.annotations.Theme;
 import com.vaadin.annotations.Title;
 import com.vaadin.annotations.VaadinServletConfiguration;
 import com.vaadin.annotations.Widgetset;
+import com.vaadin.event.SelectionEvent;
 import com.vaadin.server.VaadinRequest;
 import com.vaadin.server.VaadinServlet;
 import com.edurekademo.tutorial.addressbook.backend.Contact;
@@ -15,6 +16,7 @@ import com.vaadin.ui.HorizontalLayout;
 import com.vaadin.ui.UI;
 import com.vaadin.ui.VerticalLayout;
 import com.vaadin.v7.data.util.BeanItemContainer;
+import com.vaadin.v7.event.FieldEvents;
 import com.vaadin.v7.ui.Grid;
 import com.vaadin.v7.ui.TextField;
 
@@ -69,10 +71,20 @@ public class AddressbookUI extends UI {
          * to synchronously handle those events. Vaadin automatically sends only
          * the needed changes to the web page without loading a new page.
          */
-        newContact.addClickListener(e -> contactForm.edit(new Contact()));
+        newContact.addClickListener(new Button.ClickListener() {
+            @Override
+            public void buttonClick(Button.ClickEvent e) {
+                contactForm.edit(new Contact());
+            }
+        });
 
         filter.setInputPrompt("Filter contacts...");
-        filter.addTextChangeListener(e -> refreshContacts(e.getText()));
+        filter.addTextChangeListener(new FieldEvents.TextChangeListener() {
+            @Override
+            public void textChange(FieldEvents.TextChangeEvent e) {
+                AddressbookUI.this.refreshContacts(e.getText());
+            }
+        });
 
         contactList
                 .setContainerDataSource(new BeanItemContainer<>(Contact.class));
@@ -82,7 +94,12 @@ public class AddressbookUI extends UI {
         contactList.removeColumn("phone");
         contactList.setSelectionMode(Grid.SelectionMode.SINGLE);
         contactList.addSelectionListener(
-                e -> contactForm.edit((Contact) contactList.getSelectedRow()));
+                new SelectionEvent.SelectionListener() {
+                    @Override
+                    public void select(SelectionEvent e) {
+                        contactForm.edit((Contact) contactList.getSelectedRow());
+                    }
+                });
         refreshContacts();
     }
 
